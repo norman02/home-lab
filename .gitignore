@@ -1,0 +1,47 @@
+# 📁 Generic Linux Home Lab .gitignore
+
+# Compiled source files
+*.out
+*.o
+*.a
+*.so
+
+# Logs and temp files
+*.log
+*.tmp
+*.swp
+*.bak
+*.old
+*.tar
+*.tar.gz
+*.zip
+*.7z
+
+# System-specific files
+.DS_Store
+Thumbs.db
+
+# Shell history and sensitive files
+.bash_history
+.zsh_history
+.env
+*.key
+*.crt
+*.pem
+
+# Virtual machine files
+*.vdi
+*.vmdk
+*.qcow2
+*.iso
+*.img
+
+# Backup files
+*~
+*.backup
+
+# Editor settings
+.vscode/
+.idea/
+*.code-workspace
+
