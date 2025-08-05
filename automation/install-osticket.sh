@@ -2,9 +2,9 @@
 
 # install-osticket.sh
 # Author: John Norman
-# Purpose: Automate osTicket installation on Ubuntu Server 22.04
+# Purpose: Fully automated osTicket installation with a clean system slate on Ubuntu Server 22.04
 
-set -e  # Exit immediately if a command exits with a non-zero status
+set -e  # Exit immediately on errors
 
 # --- Configuration ---
 DB_NAME="osticket"
@@ -14,27 +14,35 @@ OSTICKET_VERSION="v1.17.4"
 INSTALL_DIR="/var/www/html/osticket"
 
 # --- Functions ---
-
 echo_step() {
   echo -e "\n🛠️  $1"
 }
 
-# --- Start Script ---
+# --- Clean Slate ---
+echo_step "🔄 Removing previous web/db installations and related configs..."
 
-echo_step "🔄 Cleaning up previous installs (Apache, MariaDB, PHP)..."
-sudo systemctl stop apache2 mariadb || true
-sudo apt purge -y apache2* mariadb-server* php* mysql-server* unzip
+# Stop services if running
+sudo systemctl stop apache2 mariadb mysql || true
+
+# Purge old packages
+sudo apt purge -y apache2* mariadb* mysql* php* libapache2-mod-php* unzip
+
+# Remove leftover files and configs
+sudo rm -rf /etc/apache2 /etc/mysql /etc/php /var/lib/mysql /var/www/html/* /var/log/mysql
+
+# Clean package system
 sudo apt autoremove -y
-sudo rm -rf /var/lib/mysql /etc/mysql /var/www/html/*
+sudo apt autoclean
+sudo apt update
 
-echo_step "Updating system packages..."
-sudo apt update && sudo apt upgrade -y
+# --- Install LAMP stack and PHP extensions ---
+echo_step "📦 Installing Apache, MariaDB, PHP, and required extensions..."
 
-echo_step "Installing Apache, MariaDB, PHP, and required extensions..."
 sudo apt install -y apache2 mariadb-server unzip
 sudo apt install -y php php-mysql php-imap php-intl php-common php-mbstring php-apcu php-cli php-curl php-gd php-xml
 
-echo_step "Securing MariaDB (non-interactive)..."
+# --- Secure MariaDB (non-interactive equivalent) ---
+echo_step "🔐 Securing MariaDB configuration..."
 sudo mysql <<EOF
 DELETE FROM mysql.user WHERE User='';
 DROP DATABASE IF EXISTS test;
@@ -42,33 +50,39 @@ DELETE FROM mysql.db WHERE Db='test' OR Db='test\\_%';
 FLUSH PRIVILEGES;
 EOF
 
-echo_step "Creating osTicket database and user..."
+# --- Set up osTicket database and user ---
+echo_step "🗃️ Creating osTicket database and user..."
 sudo mysql -e "CREATE DATABASE ${DB_NAME};"
 sudo mysql -e "CREATE USER '${DB_USER}'@'localhost' IDENTIFIED BY '${DB_PASS}';"
 sudo mysql -e "GRANT ALL PRIVILEGES ON ${DB_NAME}.* TO '${DB_USER}'@'localhost';"
 sudo mysql -e "FLUSH PRIVILEGES;"
 
-echo_step "Downloading osTicket ${OSTICKET_VERSION}..."
+# --- Download and Install osTicket ---
+echo_step "⬇️ Downloading osTicket ${OSTICKET_VERSION}..."
 cd /tmp
-wget https://github.com/osTicket/osTicket/releases/download/${OSTICKET_VERSION}/osTicket-${OSTICKET_VERSION}.zip
-unzip osTicket-${OSTICKET_VERSION}.zip
+wget -q https://github.com/osTicket/osTicket/releases/download/${OSTICKET_VERSION}/osTicket-${OSTICKET_VERSION}.zip
+unzip -q osTicket-${OSTICKET_VERSION}.zip
 
-echo_step "Installing osTicket to ${INSTALL_DIR}..."
+echo_step "📁 Installing osTicket to ${INSTALL_DIR}..."
 sudo mv upload "${INSTALL_DIR}"
 sudo cp ${INSTALL_DIR}/include/ost-sampleconfig.php ${INSTALL_DIR}/include/ost-config.php
 
-echo_step "Setting permissions..."
+# --- Set Permissions ---
+echo_step "🔒 Setting permissions..."
 sudo chown -R www-data:www-data ${INSTALL_DIR}
 sudo chmod 0666 ${INSTALL_DIR}/include/ost-config.php
 
-echo_step "Restarting Apache and enabling services..."
+# --- Finalize ---
+echo_step "🚀 Restarting and enabling services..."
 sudo systemctl restart apache2
+sudo systemctl restart mariadb
 sudo systemctl enable apache2
 sudo systemctl enable mariadb
 
+# --- Success Message ---
 echo_step "✅ Installation complete!"
-echo "Visit http://<your-vm-ip>/osticket to complete the web installer."
-echo "Database name: ${DB_NAME}"
-echo "User: ${DB_USER}"
-echo "Password: ${DB_PASS}"
+echo "Open in your browser: http://<your-vm-ip>/osticket"
+echo "DB Name:     ${DB_NAME}"
+echo "DB User:     ${DB_USER}"
+echo "DB Password: ${DB_PASS}"
 
