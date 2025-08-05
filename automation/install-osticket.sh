@@ -21,12 +21,18 @@ echo_step() {
 
 # --- Start Script ---
 
+echo_step "🔄 Cleaning up previous installs (Apache, MariaDB, PHP)..."
+sudo systemctl stop apache2 mariadb || true
+sudo apt purge -y apache2* mariadb-server* php* mysql-server* unzip
+sudo apt autoremove -y
+sudo rm -rf /var/lib/mysql /etc/mysql /var/www/html/*
+
 echo_step "Updating system packages..."
 sudo apt update && sudo apt upgrade -y
 
 echo_step "Installing Apache, MariaDB, PHP, and required extensions..."
-sudo apt install apache2 mariadb-server unzip -y
-sudo apt install php php-mysql php-imap php-intl php-common php-mbstring php-apcu php-cli php-curl php-gd php-xml -y
+sudo apt install -y apache2 mariadb-server unzip
+sudo apt install -y php php-mysql php-imap php-intl php-common php-mbstring php-apcu php-cli php-curl php-gd php-xml
 
 echo_step "Securing MariaDB (non-interactive)..."
 sudo mysql <<EOF
