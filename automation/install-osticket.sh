@@ -28,8 +28,13 @@ echo_step "Installing Apache, MariaDB, PHP, and required extensions..."
 sudo apt install apache2 mariadb-server unzip -y
 sudo apt install php php-mysql php-imap php-intl php-common php-mbstring php-apcu php-cli php-curl php-gd php-xml -y
 
-echo_step "Securing MariaDB installation..."
-sudo mysql_secure_installation
+echo_step "Securing MariaDB (non-interactive)..."
+sudo mysql <<EOF
+DELETE FROM mysql.user WHERE User='';
+DROP DATABASE IF EXISTS test;
+DELETE FROM mysql.db WHERE Db='test' OR Db='test\\_%';
+FLUSH PRIVILEGES;
+EOF
 
 echo_step "Creating osTicket database and user..."
 sudo mysql -e "CREATE DATABASE ${DB_NAME};"
