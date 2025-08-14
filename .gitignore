@@ -1,47 +1,53 @@
-# 📁 Generic Linux Home Lab .gitignore
-
-# Compiled source files
-*.out
-*.o
-*.a
-*.so
-
-# Logs and temp files
-*.log
-*.tmp
-*.swp
-*.bak
-*.old
-*.tar
-*.tar.gz
-*.zip
-*.7z
-
-# System-specific files
+# OS & editors
 .DS_Store
 Thumbs.db
-
-# Shell history and sensitive files
-.bash_history
-.zsh_history
-.env
-*.key
-*.crt
-*.pem
-
-# Virtual machine files
-*.vdi
-*.vmdk
-*.qcow2
-*.iso
-*.img
-
-# Backup files
-*~
-*.backup
-
-# Editor settings
+*.swp
+*.swo
 .vscode/
 .idea/
 *.code-workspace
 
+# Python
+__pycache__/
+*.pyc
+.venv/
+.env
+.env.*
+
+# Node (future-proof)
+node_modules/
+dist/
+build/
+
+# Logs & temps
+*.log
+*.tmp
+tmp/
+
+# VM / image artifacts
+*.iso
+*.ova
+*.ovf
+*.vmdk
+*.vdi
+*.qcow2
+*.img
+
+# Backups & archives
+*.bak
+*.old
+*.tar
+*.tar.*
+*.zip
+*.gz
+*.xz
+
+# Local state / secrets
+.ssh/
+.secrets/
+secrets/
+!secrets/.keep
+
+# Generated docs
+site/
+docs/_build/
