@@ -56,3 +56,6 @@ home-lab/
 ├── README.md
 └── lab-overview.md
 
+
+## Contributing
+Open PRs from feature branches; see .github/PULL_REQUEST_TEMPLATE.md.
